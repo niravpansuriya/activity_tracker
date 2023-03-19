@@ -1,48 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/welcomeBackground"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#CCf85d28"
-    tools:context=".MainActivity">
+    android:background="#2C3E50">
 
     <TextView
         android:id="@+id/greetingView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/goldplay_semi_bold"
-        android:text="Good Evening"
-        android:textColor="@color/white"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/dateView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="96dp"
+        android:textColor=" #F5F5F5"
+        android:textSize="24sp" />
 
     <TextView
         android:id="@+id/dateView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/goldplay_semi_bold"
-        android:text="2023-03-05"
-        android:textSize="40sp"
-        app:layout_constraintBottom_toTopOf="@id/timeView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/greetingView" />
+        android:layout_below="@+id/greetingView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:textColor=" #F5F5F5"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/timeView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/goldplay_semi_bold"
-        android:text="10:20:30"
-        android:textSize="40sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dateView" />
+        android:layout_below="@+id/dateView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="64dp"
+        android:textColor=" #F5F5F5"
+        android:textSize="48sp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

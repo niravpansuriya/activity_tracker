@@ -1,26 +1,21 @@
 package com.example.activitytracker
 
-import android.Manifest;
+import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationRequest
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.renderscript.RenderScript.Priority
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
-import com.google.android.gms.location.Priority
 
 class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
 
@@ -43,6 +38,7 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
                 for (location in locationResult.locations) {
+                    println("accuracy " + location.accuracy)
                     // Update map with the new location
                     updateMap(location)
                 }
@@ -100,12 +96,70 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun createLocationRequest() {
-        locationRequest = LocationRequest.Builder(10000, 10000)
-            .setInterval(10000)
-            .setFastestInterval(5000)
-            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .build()
+        locationRequest = LocationRequest.create().apply {
+            interval = 5000L
+            fastestInterval = 3000L
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_CODE
+            )
+            return
+        }
+
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            null /* Looper */
+        )
+    }
+
+    private fun updateMap(location: Location) {
+        val latLng = LatLng(location.latitude, location.longitude)
+        mMap.addMarker(MarkerOptions().position(latLng).title("Current location"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        startLocationUpdates()
     }
 
 
+    override fun onPause() {
+        super.onPause()
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Permission denied",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
 }

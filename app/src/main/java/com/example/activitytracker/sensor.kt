@@ -28,6 +28,7 @@ class sensor : AppCompatActivity(), SensorEventListener {
     private lateinit var activityTypeView: TextView;
     private lateinit var motivationalQuoteView: TextView;
     private lateinit var analyticsButton: ImageButton;
+    private lateinit var mapButton: ImageButton;
 
     private lateinit var sensorManager: SensorManager
     private lateinit var accelSensor: Sensor
@@ -62,6 +63,11 @@ class sensor : AppCompatActivity(), SensorEventListener {
         analyticsButton.setOnClickListener {
             startActivity(Intent(this, analytics::class.java));
         }
+
+        mapButton = findViewById(R.id.mapButton)
+        mapButton.setOnClickListener {
+            startActivity(Intent(this,  CurrentLocation::class.java));
+        }
     }
 
     fun showToast(message: String){
@@ -75,7 +81,6 @@ class sensor : AppCompatActivity(), SensorEventListener {
     }
 
     fun convertDurationInReadableFormat(duration: Int):String{
-        println("duration " + duration)
         var minutes = 0;
         var hours = 0;
         var seconds = duration;

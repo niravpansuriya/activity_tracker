@@ -6,6 +6,7 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import java.time.LocalDateTime
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var greetingView: TextView;
     lateinit var dateView: TextView;
     lateinit var timeView: TextView;
+    lateinit var imageView: ImageView;
     lateinit var layout: RelativeLayout;
 
     @SuppressLint("MissingInflatedId")
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity() {
         greetingView = findViewById(R.id.greetingView)
         dateView = findViewById(R.id.dateView)
         timeView = findViewById(R.id.timeView)
+        imageView = findViewById(R.id.imageView)
         layout = findViewById(R.id.welcomeBackground)
 
         changeUIBasedOnTime();
@@ -70,16 +73,20 @@ class MainActivity : AppCompatActivity() {
     fun changeUIBasedOnTime(){
         val time = getTimeofDay()
         val backgroundColor = when{
-            time == "morning" -> "#FEEFB3"
-            time == "afternoon" -> "#FFD7B5"
+            time == "morning" -> "#8FB5AA"
+            time == "afternoon" -> "#afa493"
+            time == "evening" -> "#FFC857"
             else -> "#2C3E50"
         }
         val fontColor = when{
-            time == "morning"->"#434343"
-            time == "afternoon" -> "#434343"
+            time == "morning"->"#FFFFFF"
+            time == "afternoon" -> "#3D3D3D"
+            time == "evening" -> "#FFF2E6"
             else -> "#F5F5F5"
         }
 
+        val resourceId = resources.getIdentifier(time, "drawable", packageName)
+        imageView.setImageResource(resourceId)
         greetingView.setTextColor(Color.parseColor(fontColor));
         dateView.setTextColor(Color.parseColor(fontColor));
         timeView.setTextColor(Color.parseColor(fontColor));

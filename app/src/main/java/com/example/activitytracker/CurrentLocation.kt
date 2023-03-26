@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -15,40 +17,30 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 
 class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var mMap: GoogleMap
+    private lateinit var map: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
-    private lateinit var locationRequest: LocationRequest
-    private val REQUEST_CODE = 101
+    private var marker: Marker? = null
+    private var polyline: Polyline? = null
 
-
+    companion object {
+        private const val REQUEST_CODE = 1
+        private const val DEFAULT_ZOOM = 15f
+        private const val UPDATE_INTERVAL = 1000L // 1 second
+        private const val FASTEST_UPDATE_INTERVAL = 500L // 0.5 second
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_current_location)
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                locationResult ?: return
-                for (location in locationResult.locations) {
-                    println("accuracy " + location.accuracy)
-                    // Update map with the new location
-                    updateMap(location)
-                }
-            }
-        }
-
-        createLocationRequest()
-
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
@@ -62,10 +54,10 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
      * installed Google Play services and returned to the app.
      */
     override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+        map = googleMap
 
-        // Check if the app has permission to access the device's location
-        if (ActivityCompat.checkSelfPermission(
+        // Request location permission if not granted
+        if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -75,35 +67,40 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
         ) {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
                 REQUEST_CODE
             )
             return
         }
 
-        // Set map type and enable location button
-        mMap.mapType = GoogleMap.MAP_TYPE_NORMAL
-        mMap.isMyLocationEnabled = true
-
-        // Get user's last known location and move camera to it
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
+        // Enable my location layer and move camera to current location
+        map.isMyLocationEnabled = true
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location?.let {
                 val latLng = LatLng(location.latitude, location.longitude)
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 21f))
             }
         }
 
-    }
-
-    private fun createLocationRequest() {
-        locationRequest = LocationRequest.create().apply {
-            interval = 5000L
-            fastestInterval = 3000L
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        // Add listener to update marker and polyline when location changes
+        map.setOnMyLocationChangeListener { location ->
+            updateLocationOnMap(location)
         }
+
+        // Start location updates
+        startLocationUpdates()
     }
 
     private fun startLocationUpdates() {
+        // Request high accuracy and faster update intervals for better location accuracy
+        val locationRequest = LocationRequest()
+            .setInterval(UPDATE_INTERVAL)
+            .setFastestInterval(FASTEST_UPDATE_INTERVAL)
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -112,26 +109,83 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_CODE
-            )
+            println("isssueueueueue=======================")
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
             return
         }
-
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
-            null /* Looper */
+            Looper.myLooper()
         )
     }
 
-    private fun updateMap(location: Location) {
-        val latLng = LatLng(location.latitude, location.longitude)
-        mMap.addMarker(MarkerOptions().position(latLng).title("Current location"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult?) {
+            super.onLocationResult(locationResult)
+            locationResult?.lastLocation?.let {
+                updateLocationOnMap(it, marker?.position?.let { previousLocation ->
+                    Location("").apply {
+                        latitude = previousLocation.latitude
+                        longitude = previousLocation.longitude
+                    }
+                })
+            }
+        }
     }
+
+    private fun updateLocationOnMap(currentLocation: Location?, previousLocation: Location? = null) {
+        currentLocation?.let {
+            val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+            marker?.let {
+                // Update existing marker position and rotation angle
+                it.position = latLng
+                it.rotation = computeRotation(previousLocation, currentLocation)
+            } ?: run {
+                // Create new marker if it doesn't exist
+                marker = map.addMarker(
+                    MarkerOptions().position(latLng).rotation(computeRotation(previousLocation, currentLocation))
+                )
+            }
+            // Move camera to updated location and draw polyline
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM))
+            drawPolyline(currentLocation)
+        }
+    }
+
+    private fun computeRotation(previousLocation: Location?, currentLocation: Location): Float {
+        return previousLocation?.let { prevLoc ->
+            val bearing = prevLoc.bearingTo(currentLocation)
+            (bearing + 360) % 360
+        } ?: run {
+            0f
+        }
+    }
+
+    private fun drawPolyline(currentLocation: Location) {
+        polyline?.let {
+            // Add new point to existing polyline
+            val points = it.points
+            points.add(LatLng(currentLocation.latitude, currentLocation.longitude))
+            it.points = points
+        } ?: run {
+            // Create new polyline if it doesn't exist
+            polyline = map.addPolyline(
+                PolylineOptions().apply {
+                    color(ContextCompat.getColor(this@CurrentLocation, R.color.polyline_color))
+                    width(resources.getDimensionPixelSize(R.dimen.polyline_width).toFloat())
+                    add(LatLng(currentLocation.latitude, currentLocation.longitude))
+                }
+            )
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()

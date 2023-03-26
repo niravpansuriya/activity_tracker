@@ -9,5 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="toast_background_color">#2196F3</color>
     <color name="toast_text_color">#FFFFFF</color>
+    <color name="polyline_color">#3F51B5</color>
 
 </resources>

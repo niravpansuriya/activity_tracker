@@ -179,7 +179,8 @@ class sensor : AppCompatActivity(), SensorEventListener {
             addDataInDatabase();
         }
         activityMap["startTime"] = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-        activityMap["date"] = LocalDateTime.now().format(DateTimeFormatter.ofPattern("DD/MM/YYYY"));
+        activityMap["date"] = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/YYYY"));
+        println("date"+LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/YYYY")));
         activityMap["activityType"] = activityType;
         activityMap["datetimeObject"] = LocalDateTime.now();
     }
@@ -233,7 +234,7 @@ class sensor : AppCompatActivity(), SensorEventListener {
                 pastActivity = "running"
                 activityTypeView.text = "Running";
                 updateActivityImage("running");
-                updateMotivationQuote("standing");
+                updateMotivationQuote("running");
 
             }else{
                 if(pastActivity != "running"){

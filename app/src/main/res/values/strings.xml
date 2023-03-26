@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Activity Tracker</string>
     <string name="title_activity_current_location">CurrentLocation</string>
+    <dimen name="polyline_width">8dp</dimen>
 </resources>

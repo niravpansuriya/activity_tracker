@@ -1,7 +1,6 @@
 package com.example.activitytracker
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
@@ -22,13 +21,23 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 
-class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
+class Map : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
+
+    // Fused Location Client is used to retrieve the user's location in
+    // a way that is optimized for battery life and accuracy,
+    // by combining data from various sensors including GPS,
+    // Wi-Fi, and cellular networks.
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var marker: Marker? = null
     private var polyline: Polyline? = null
 
+    /**
+     * REQUEST_CODE is used when requesting location permission,
+     * and DEFAULT_ZOOM (zoom on the map), UPDATE_INTERVAL, and FASTEST_UPDATE_INTERVAL
+     * are used when displaying the user's location on the map.
+     */
     companion object {
         private const val REQUEST_CODE = 1
         private const val DEFAULT_ZOOM = 15f
@@ -109,7 +118,6 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            println("isssueueueueue=======================")
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -119,6 +127,10 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
             // for ActivityCompat#requestPermissions for more details.
             return
         }
+
+        // request location update
+        // location request contains all necessary parameters
+        // when update will be done, locationCallBack will be called
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
@@ -126,10 +138,14 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
         )
     }
 
+    // this will be called when location will be udpated
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult?) {
             super.onLocationResult(locationResult)
             locationResult?.lastLocation?.let {
+                // update location marker on the map
+                // so if user is running, at every 5 seconds
+                // location marker will be updated
                 updateLocationOnMap(it, marker?.position?.let { previousLocation ->
                     Location("").apply {
                         latitude = previousLocation.latitude
@@ -140,6 +156,8 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // it will update the location on the map
+    // it will update the position of the marker on the map
     private fun updateLocationOnMap(currentLocation: Location?, previousLocation: Location? = null) {
         currentLocation?.let {
             val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
@@ -159,6 +177,8 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // it calculates the rotation of the user,
+    // so marker can be updated accordingly
     private fun computeRotation(previousLocation: Location?, currentLocation: Location): Float {
         return previousLocation?.let { prevLoc ->
             val bearing = prevLoc.bearingTo(currentLocation)
@@ -178,7 +198,7 @@ class CurrentLocation : AppCompatActivity(), OnMapReadyCallback {
             // Create new polyline if it doesn't exist
             polyline = map.addPolyline(
                 PolylineOptions().apply {
-                    color(ContextCompat.getColor(this@CurrentLocation, R.color.polyline_color))
+                    color(ContextCompat.getColor(this@Map, R.color.polyline_color))
                     width(resources.getDimensionPixelSize(R.dimen.polyline_width).toFloat())
                     add(LatLng(currentLocation.latitude, currentLocation.longitude))
                 }

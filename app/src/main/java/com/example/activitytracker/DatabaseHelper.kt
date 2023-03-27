@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
+    // database meta data
     companion object {
         private const val DATABASE_NAME = "activity_tracker.db"
         private const val DATABASE_VERSION = 1
@@ -20,6 +21,8 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     }
 
+
+    // create a table with given column names
     override fun onCreate(db: SQLiteDatabase) {
         val CREATE_TABLE = ("CREATE TABLE " + TABLE_NAME + "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY,"
@@ -30,11 +33,13 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.execSQL(CREATE_TABLE)
     }
 
+    // drop the table
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME)
         onCreate(db)
     }
 
+    // add data in database
     fun addDataInDatabase(activityType: String, date: String, time: String, duration: Int): Long {
         val db = this.writableDatabase
         val values = ContentValues()
@@ -48,6 +53,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         return id
     }
 
+    // get the cursor which points to the all data of the sqlite database
     fun getDataCursor(): Cursor{
         val cursor = this.readableDatabase.rawQuery("SELECT * FROM " + TABLE_NAME, null);
         return cursor;

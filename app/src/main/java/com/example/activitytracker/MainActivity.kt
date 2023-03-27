@@ -32,27 +32,35 @@ class MainActivity : AppCompatActivity() {
         imageView = findViewById(R.id.imageView)
         layout = findViewById(R.id.welcomeBackground)
 
+        // it changes the ui based on the time of the day
         changeUIBasedOnTime();
 
+        // update the text based on time like Good morning, Good afternoon etc.
         greetingView.setText("Good ${getTimeofDay()}")
+
+        // show current date and time
         dateView.setText("Today is ${getCurrentDate()}")
         timeView.setText(getCurrentTime())
 
+        // update the time at every 5 seconds
         val handler = Handler()
         handler.postDelayed(object : Runnable {
             override fun run() {
                 timeView.setText(getCurrentTime())
                 //Call your function here
-                handler.postDelayed(this, 5000)//1 sec delay
+                handler.postDelayed(this, 5000)//5 sec delay
             }
         }, 0)
 
+        // after 2 seconds, go to the Activity activity
         handler.postDelayed({
-           startActivity(Intent(this, sensor::class.java))
+           startActivity(Intent(this, Activity::class.java))
         }, 2000)
 
     }
 
+    // it returns the time of the day based on the hours
+    // like morning, afternoon etc.
     fun getTimeofDay(): String{
         val hour = getHour()
 
@@ -70,6 +78,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // it changes the appearance of the the welcome screen
+    // based on the current time of the day
     fun changeUIBasedOnTime(){
         val time = getTimeofDay()
         val backgroundColor = when{
@@ -93,6 +103,7 @@ class MainActivity : AppCompatActivity() {
         layout.setBackgroundColor(Color.parseColor(backgroundColor));
     }
 
+    // return the current date to show on the welcome screen
     fun getCurrentDate(): String{
         val current = LocalDateTime.now()
         val monthName = current.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
@@ -108,6 +119,7 @@ class MainActivity : AppCompatActivity() {
         return formatted
     }
 
+    // returns the hour of the time
     fun getHour(): Int{
         val current = LocalDateTime.now()
         val formatter = DateTimeFormatter.ofPattern("HH")

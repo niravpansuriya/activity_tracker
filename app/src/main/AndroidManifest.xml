@@ -14,7 +14,7 @@
         android:theme="@style/Theme.ActivityTracker"
         tools:targetApi="31" >
         <activity
-            android:name=".analytics"
+            android:name=".Analytics"
             android:exported="false" >
 
             <meta-data
@@ -22,7 +22,7 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".sensor"
+            android:name=".Activity"
             android:exported="false" >
 
             <meta-data
@@ -45,7 +45,7 @@
             android:value="AIzaSyBVlpx2y_BqtDwQ9YKNnVBgbIGEJAcx5wg" />
 
         <activity
-            android:name=".CurrentLocation"
+            android:name=".Map"
             android:exported="false"
             android:label="@string/title_activity_current_location" >
 

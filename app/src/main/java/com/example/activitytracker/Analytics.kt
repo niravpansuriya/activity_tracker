@@ -8,7 +8,8 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 
-class analytics : AppCompatActivity() {
+// this is to show the table to show the data of the sqlite
+class Analytics : AppCompatActivity() {
     private lateinit var table: TableLayout;
     private lateinit var db: DatabaseHelper;
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +23,7 @@ class analytics : AppCompatActivity() {
         fillTable(db.getDataCursor());
     }
 
+    // this will fill the table based on the sqlite db cursor
     @SuppressLint("Range")
     fun fillTable(cursor: Cursor){
         while (cursor.moveToNext()) {
@@ -34,6 +36,7 @@ class analytics : AppCompatActivity() {
         cursor.close();
     }
 
+    // it will generate the row of the table based on the given data
     fun generateRow(activityType: String, date: String, time:String, duration:Int): TableRow{
         val row = TableRow(this)
 
